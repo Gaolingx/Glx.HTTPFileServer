@@ -2,9 +2,10 @@ import http.server
 import ssl
 from functools import partial
 from server_logger import Logger
+import socket
 
 # 定义服务器地址和端口
-server_ip = '0.0.0.0'
+server_ip = '::'
 server_port = 26661
 server_address = (server_ip, server_port)
 target_directory = "F:/FileCDN"
@@ -19,8 +20,14 @@ handler = partial(http.server.SimpleHTTPRequestHandler, directory=target_directo
 # 实例化日志对象
 logger = Logger()
 
+
+# 自定义支持IPv6的服务器类
+class DualStackHTTPServer(http.server.HTTPServer):
+    address_family = socket.AF_INET6
+
+
 # 创建HTTPServer实例
-httpd = http.server.HTTPServer(server_address, handler)
+httpd = DualStackHTTPServer(server_address, handler)
 
 # 包装SSL套接字
 httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
